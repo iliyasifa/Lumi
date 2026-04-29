@@ -20,10 +20,37 @@ Future<Uint8List?> pickImage(ImageSource source) async {
 void showSnackBar({
   required String content,
   required BuildContext ctx,
+  bool isError = true,
 }) {
   ScaffoldMessenger.of(ctx)
     ..hideCurrentSnackBar()
     ..showSnackBar(
-      SnackBar(content: Text(content)),
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isError ? Icons.error_outline : Icons.check_circle_outline,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                content,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: isError ? Colors.redAccent : Colors.green.shade600,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
+      ),
     );
 }
