@@ -44,37 +44,39 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCSzuhzmZhwgSwjImOTy4Cmu7xQExAPlqI',
-    appId: '1:1067626187837:web:ff9b53cce376535fbeae54',
-    messagingSenderId: '1067626187837',
-    projectId: 'instagram-flutter-clone-324cc',
-    authDomain: 'instagram-flutter-clone-324cc.firebaseapp.com',
-    storageBucket: 'instagram-flutter-clone-324cc.appspot.com',
+    apiKey: 'AIzaSyDPcse7LAihhAFvzln9GRcyP6qk-_bTNVg',
+    appId: '1:126308261052:web:53ab4048282f4f808a04b9',
+    messagingSenderId: '126308261052',
+    projectId: 'instagram-flutter-clone-769c0',
+    authDomain: 'instagram-flutter-clone-769c0.firebaseapp.com',
+    storageBucket: 'instagram-flutter-clone-769c0.firebasestorage.app',
+    measurementId: 'G-SFH0FJ1EE9',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDaEbGInmy0LDPiGXdq9W65XRcMWOtqj94',
-    appId: '1:1067626187837:android:b8ae62f48ee9d121beae54',
-    messagingSenderId: '1067626187837',
-    projectId: 'instagram-flutter-clone-324cc',
-    storageBucket: 'instagram-flutter-clone-324cc.appspot.com',
+    apiKey: 'AIzaSyBUpeK0qvh6I3dfHgP9ZLP0N-5IOeGVdv8',
+    appId: '1:126308261052:android:259bb5dd24f18db68a04b9',
+    messagingSenderId: '126308261052',
+    projectId: 'instagram-flutter-clone-769c0',
+    storageBucket: 'instagram-flutter-clone-769c0.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDQgafwC0TojqIcwp_pUK2_uDjD7R_qU7s',
-    appId: '1:1067626187837:ios:c230c6f7e3488668beae54',
-    messagingSenderId: '1067626187837',
-    projectId: 'instagram-flutter-clone-324cc',
-    storageBucket: 'instagram-flutter-clone-324cc.appspot.com',
+    apiKey: 'AIzaSyAWr96mYE-bl0qy2jKDzFYcuVkrCbmwzTc',
+    appId: '1:126308261052:ios:b86c61995a2020de8a04b9',
+    messagingSenderId: '126308261052',
+    projectId: 'instagram-flutter-clone-769c0',
+    storageBucket: 'instagram-flutter-clone-769c0.firebasestorage.app',
     iosBundleId: 'com.example.instagramFlutterClone',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDQgafwC0TojqIcwp_pUK2_uDjD7R_qU7s',
-    appId: '1:1067626187837:ios:d882a63a07b635dbbeae54',
-    messagingSenderId: '1067626187837',
-    projectId: 'instagram-flutter-clone-324cc',
-    storageBucket: 'instagram-flutter-clone-324cc.appspot.com',
-    iosBundleId: 'com.example.instagramFlutterClone.RunnerTests',
+    apiKey: 'AIzaSyAWr96mYE-bl0qy2jKDzFYcuVkrCbmwzTc',
+    appId: '1:126308261052:ios:b86c61995a2020de8a04b9',
+    messagingSenderId: '126308261052',
+    projectId: 'instagram-flutter-clone-769c0',
+    storageBucket: 'instagram-flutter-clone-769c0.firebasestorage.app',
+    iosBundleId: 'com.example.instagramFlutterClone',
   );
+
 }

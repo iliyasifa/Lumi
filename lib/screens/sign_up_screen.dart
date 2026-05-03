@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:instagram_flutter_clone/screens/explore_screen.dart';
 import 'package:instagram_flutter_clone/utils/colors.dart';
 import 'package:instagram_flutter_clone/utils/utils.dart';
 import 'package:instagram_flutter_clone/screens/login_screen.dart';
@@ -11,7 +12,7 @@ import 'package:instagram_flutter_clone/widgets/text_field_input.dart';
 import 'package:provider/provider.dart';
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({Key? key}) : super(key: key);
+  const SignUpScreen({super.key});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -66,10 +67,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ctx: context,
         isError: false,
       );
-      _emailController.clear();
-      _passwordController.clear();
-      _usernameController.clear();
-      _bioController.clear();
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const ExploreScreen(),
+        ),
+      );
     } else {
       if (!mounted) return;
       showSnackBar(
@@ -171,24 +173,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           val!.isEmpty ? 'Username is required' : null,
                     ),
                     const SizedBox(height: 16),
-                  TextFieldInput(
-                    hintText: 'Enter your email',
-                    textInputType: TextInputType.emailAddress,
-                    textEditingController: _emailController,
-                    prefixIcon:
-                        const Icon(Icons.email_outlined, color: Colors.grey),
-                    validator: (val) {
-                      if (val == null || val.isEmpty) {
-                        return 'Email is required';
-                      }
-                      final emailRegExp =
-                          RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                      if (!emailRegExp.hasMatch(val)) {
-                        return 'Enter a valid email address';
-                      }
-                      return null;
-                    },
-                  ),
+                    TextFieldInput(
+                      hintText: 'Enter your email',
+                      textInputType: TextInputType.emailAddress,
+                      textEditingController: _emailController,
+                      prefixIcon:
+                          const Icon(Icons.email_outlined, color: Colors.grey),
+                      validator: (val) {
+                        if (val == null || val.isEmpty) {
+                          return 'Email is required';
+                        }
+                        final emailRegExp =
+                            RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                        if (!emailRegExp.hasMatch(val)) {
+                          return 'Enter a valid email address';
+                        }
+                        return null;
+                      },
+                    ),
                     const SizedBox(height: 16),
                     TextFieldInput(
                       hintText: 'Create a password',

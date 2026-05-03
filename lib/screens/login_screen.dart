@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:instagram_flutter_clone/screens/explore_screen.dart';
 import 'package:instagram_flutter_clone/screens/sign_up_screen.dart';
 import 'package:instagram_flutter_clone/utils/colors.dart';
 import 'package:instagram_flutter_clone/utils/utils.dart';
@@ -40,7 +41,11 @@ class _LoginScreenState extends State<LoginScreen> {
         ctx: context,
         isError: false,
       );
-      // navigate to home
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const ExploreScreen(),
+        ),
+      );
     } else {
       if (!mounted) return;
       showSnackBar(content: res, ctx: context, isError: true);

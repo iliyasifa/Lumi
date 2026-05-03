@@ -12,13 +12,17 @@ class StorageMethods {
     required Uint8List file,
     required bool isPost,
   }) async {
-    Reference ref =
-        _storage.ref().child(childName).child(_auth.currentUser!.uid);
-    UploadTask uploadTask = ref.putData(file);
+    try {
+      final String uid = _auth.currentUser!.uid;
+      Reference ref = _storage.ref().child(childName).child(uid);
+      UploadTask uploadTask = ref.putData(file);
 
-    TaskSnapshot snap = await uploadTask;
+      TaskSnapshot snap = await uploadTask;
 
-    final String downloadUrl = await snap.ref.getDownloadURL();
-    return downloadUrl;
+      final String downloadUrl = await snap.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      return e.toString();
+    }
   }
 }

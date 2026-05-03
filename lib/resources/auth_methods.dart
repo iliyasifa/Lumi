@@ -35,8 +35,8 @@ class Auth {
         /// register the user
         final UserCredential userCredential =
             await _auth.createUserWithEmailAndPassword(
-          email: email,
-          password: passWord,
+          email: email.trim(),
+          password: passWord.trim(),
         );
 
         final String photoUrl = await StorageMethods().uploadImageToStorage(
@@ -67,11 +67,11 @@ class Auth {
       }
     } on FirebaseAuthException catch (err) {
       if (err.code == 'invalid-email') {
-        res = 'This email is badly formatted';
+        res = err.message ?? 'This email is badly formatted';
       } else if (err.code == 'email-already-in-use') {
-        res = 'This email is already in use';
+        res = err.message ?? 'This email is already in use';
       } else if (err.code == 'weak-password') {
-        res = 'The password should be atleast 6 characters';
+        res = err.message ?? 'The password should be atleast 6 characters';
       }
     } catch (err) {
       res = err.toString();
@@ -86,10 +86,10 @@ class Auth {
   }) async {
     String res = "Some error occurred";
     try {
-      if (email.isNotEmpty || password.isNotEmpty) {
+      if (email.isNotEmpty && password.isNotEmpty) {
         await _auth.signInWithEmailAndPassword(
-          email: email,
-          password: password,
+          email: email.trim(),
+          password: password.trim(),
         );
         res = "success";
       } else {
@@ -97,11 +97,11 @@ class Auth {
       }
     } on FirebaseAuthException catch (err) {
       if (err.code == 'user-not-found') {
-        res = 'User not found';
+        res = err.message ?? 'User not found';
       } else if (err.code == 'wrong-password') {
-        res = 'Wrong password';
+        res = err.message ?? 'Wrong password';
       } else if (err.code == 'invalid-credential') {
-        res = 'Invalid email or password';
+        res = err.message ?? 'Invalid email or password';
       }
     } catch (err) {
       res = err.toString();
