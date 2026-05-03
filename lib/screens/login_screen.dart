@@ -99,6 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       textEditingController: _emailController,
                       prefixIcon:
                           const Icon(Icons.email_outlined, color: Colors.grey),
+                      textInputAction: TextInputAction.next,
                       validator: (val) {
                         if (val == null || val.isEmpty) {
                           return 'Email is required';
@@ -119,6 +120,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       isPass: true,
                       prefixIcon:
                           const Icon(Icons.lock_outline, color: Colors.grey),
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => loginUser(),
                       validator: (val) =>
                           val!.isEmpty ? 'Password is required' : null,
                     ),

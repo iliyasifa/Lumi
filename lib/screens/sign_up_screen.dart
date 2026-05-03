@@ -21,6 +21,8 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final TextEditingController _bioController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   Uint8List? _image;
@@ -31,6 +33,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _bioController.dispose();
     _usernameController.dispose();
   }
@@ -169,6 +172,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       textEditingController: _usernameController,
                       prefixIcon:
                           const Icon(Icons.person_outline, color: Colors.grey),
+                      textInputAction: TextInputAction.next,
                       validator: (val) =>
                           val!.isEmpty ? 'Username is required' : null,
                     ),
@@ -179,6 +183,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       textEditingController: _emailController,
                       prefixIcon:
                           const Icon(Icons.email_outlined, color: Colors.grey),
+                      textInputAction: TextInputAction.next,
                       validator: (val) {
                         if (val == null || val.isEmpty) {
                           return 'Email is required';
@@ -199,8 +204,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       isPass: true,
                       prefixIcon:
                           const Icon(Icons.lock_outline, color: Colors.grey),
-                      validator: (val) =>
-                          val!.isEmpty ? 'Password is required' : null,
+                      textInputAction: TextInputAction.next,
+                      validator: (val) {
+                        if (val == null || val.isEmpty) {
+                          return 'Password is required';
+                        }
+                        if (val.length < 8) {
+                          return 'Password must be at least 8 characters';
+                        }
+                        if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]')
+                            .hasMatch(val)) {
+                          return 'Password must contain letters and numbers';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFieldInput(
+                      hintText: 'Confirm password',
+                      textInputType: TextInputType.visiblePassword,
+                      textEditingController: _confirmPasswordController,
+                      isPass: true,
+                      prefixIcon:
+                          const Icon(Icons.lock_outline, color: Colors.grey),
+                      textInputAction: TextInputAction.next,
+                      validator: (val) {
+                        if (val == null || val.isEmpty) {
+                          return 'Please confirm your password';
+                        }
+                        if (val != _passwordController.text) {
+                          return 'Passwords do not match';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     TextFieldInput(
@@ -209,6 +245,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       textEditingController: _bioController,
                       prefixIcon:
                           const Icon(Icons.info_outline, color: Colors.grey),
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => signUpUser(),
                       validator: (val) =>
                           val!.isEmpty ? 'Bio is required' : null,
                     ),
