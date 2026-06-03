@@ -21,6 +21,10 @@ class AuthViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> checkEmailExists(String email) async {
+    return await _authMethods.checkEmailExists(email);
+  }
+
   Future<String> signUpUser({
     required String email,
     required String password,

@@ -22,7 +22,7 @@ class StorageMethods {
       final String downloadUrl = await snap.ref.getDownloadURL();
       return downloadUrl;
     } catch (e) {
-      return e.toString();
+      rethrow;
     }
   }
 }

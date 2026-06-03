@@ -11,7 +11,7 @@ class TextFieldInput extends StatefulWidget {
   final void Function(String)? onFieldSubmitted;
 
   const TextFieldInput({
-    Key? key,
+    super.key,
     required this.textEditingController,
     required this.textInputType,
     required this.hintText,
@@ -20,7 +20,7 @@ class TextFieldInput extends StatefulWidget {
     this.validator,
     this.textInputAction,
     this.onFieldSubmitted,
-  }) : super(key: key);
+  });
 
   @override
   State<TextFieldInput> createState() => _TextFieldInputState();

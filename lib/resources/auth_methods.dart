@@ -17,6 +17,25 @@ class Auth {
     return model.User.fromSnap(snap);
   }
 
+  /// [checkEmailExists] checks if an email is already in use
+  Future<bool> checkEmailExists(String email) async {
+    try {
+      final QuerySnapshot result = await _firebaseFirestore
+          .collection('users')
+          .where('email', isEqualTo: email.trim())
+          .limit(1)
+          .get();
+
+      if (result.docs.isNotEmpty) {
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   /// [signUpUser] method used to sign up user
   Future<String> signUpUser({
     required String email,
@@ -69,7 +88,7 @@ class Auth {
       if (err.code == 'invalid-email') {
         res = err.message ?? 'This email is badly formatted';
       } else if (err.code == 'email-already-in-use') {
-        res = err.message ?? 'This email is already in use';
+        res = 'This email is already in use';
       } else if (err.code == 'weak-password') {
         res = err.message ?? 'The password should be atleast 6 characters';
       }

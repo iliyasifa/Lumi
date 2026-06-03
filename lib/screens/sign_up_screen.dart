@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -27,9 +28,53 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _usernameController = TextEditingController();
   Uint8List? _image;
   final _formKey = GlobalKey<FormState>();
+  String? _serverEmailError;
+  Timer? _debounce;
+  bool _isCheckingEmail = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController.addListener(_onEmailChanged);
+  }
+
+  void _onEmailChanged() {
+    if (_serverEmailError != null) {
+      setState(() {
+        _serverEmailError = null;
+      });
+      _formKey.currentState?.validate();
+    }
+
+    final email = _emailController.text.trim();
+    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    
+    if (emailRegExp.hasMatch(email)) {
+      if (_debounce?.isActive ?? false) _debounce!.cancel();
+      _debounce = Timer(const Duration(milliseconds: 800), () async {
+        setState(() {
+          _isCheckingEmail = true;
+        });
+        
+        final authViewModel = context.read<AuthViewModel>();
+        bool exists = await authViewModel.checkEmailExists(email);
+        
+        if (!mounted) return;
+        
+        setState(() {
+          _isCheckingEmail = false;
+          if (exists) {
+            _serverEmailError = 'This email is already in use';
+            _formKey.currentState?.validate();
+          }
+        });
+      });
+    }
+  }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     super.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -75,6 +120,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
           builder: (context) => const ExploreScreen(),
         ),
       );
+    } else if (res.contains('already in use')) {
+      setState(() {
+        _serverEmailError = res;
+      });
+      _formKey.currentState!.validate();
     } else {
       if (!mounted) return;
       showSnackBar(
@@ -185,8 +235,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           const Icon(Icons.email_outlined, color: Colors.grey),
                       textInputAction: TextInputAction.next,
                       validator: (val) {
+                        if (_serverEmailError != null) {
+                          return _serverEmailError;
+                        }
                         if (val == null || val.isEmpty) {
                           return 'Email is required';
+                        }
+                        if (_isCheckingEmail) {
+                          // Optional: we can just return null and wait for the check, 
+                          // or let the UI know it's checking. 
+                          return null;
                         }
                         final emailRegExp =
                             RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
