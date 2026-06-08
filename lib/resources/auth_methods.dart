@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:instagram_flutter_clone/models/user.dart' as model;
 import 'package:instagram_flutter_clone/resources/storage_methods.dart';
 
@@ -130,5 +131,56 @@ class Auth {
 
   Future<void> signOut() async {
     await _auth.signOut();
+    await GoogleSignIn().signOut();
+  }
+
+  /// [signInWithGoogle] method used to sign in with Google
+  Future<String> signInWithGoogle() async {
+    String res = "Some error occurred";
+    try {
+      await GoogleSignIn().signOut();
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        return "cancelled";
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
+      User? user = userCredential.user;
+
+      if (user != null) {
+        if (userCredential.additionalUserInfo?.isNewUser == true ||
+            !(await _firebaseFirestore.collection('users').doc(user.uid).get())
+                .exists) {
+          model.User newUser = model.User(
+            username: user.displayName ?? 'User',
+            uid: user.uid,
+            email: user.email ?? '',
+            bio: '',
+            followers: [],
+            following: [],
+            photoUrl: user.photoURL ?? 'https://i.stack.imgur.com/l60Hf.png',
+          );
+
+          await _firebaseFirestore
+              .collection('users')
+              .doc(user.uid)
+              .set(newUser.toJson());
+        }
+        res = "success";
+      }
+    } on FirebaseAuthException catch (err) {
+      res = err.message ?? err.toString();
+    } catch (err) {
+      res = err.toString();
+    }
+    return res;
   }
 }

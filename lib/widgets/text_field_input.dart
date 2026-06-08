@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
-class TextFieldInput extends StatefulWidget {
+class TextFieldInput extends HookWidget {
   final TextEditingController textEditingController;
   final TextInputType textInputType;
   final String hintText;
@@ -9,6 +10,7 @@ class TextFieldInput extends StatefulWidget {
   final String? Function(String?)? validator;
   final TextInputAction? textInputAction;
   final void Function(String)? onFieldSubmitted;
+  final bool enabled;
 
   const TextFieldInput({
     super.key,
@@ -20,77 +22,72 @@ class TextFieldInput extends StatefulWidget {
     this.validator,
     this.textInputAction,
     this.onFieldSubmitted,
+    this.enabled = true,
   });
 
   @override
-  State<TextFieldInput> createState() => _TextFieldInputState();
-}
-
-class _TextFieldInputState extends State<TextFieldInput> {
-  late bool _obscureText;
-
-  @override
-  void initState() {
-    super.initState();
-    _obscureText = widget.isPass;
-  }
-
-  void _togglePasswordVisibility() {
-    setState(() {
-      _obscureText = !_obscureText;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final obscureText = useState(isPass);
+
     return TextFormField(
-      controller: widget.textEditingController,
-      keyboardType: widget.textInputType,
+      enabled: enabled,
+      controller: textEditingController,
+      keyboardType: textInputType,
       style: const TextStyle(color: Colors.white, fontSize: 16),
-      validator: widget.validator,
+      validator: validator,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      textInputAction: widget.textInputAction,
-      onFieldSubmitted: widget.onFieldSubmitted,
+      textInputAction: textInputAction,
+      onFieldSubmitted: onFieldSubmitted,
       decoration: InputDecoration(
-        hintText: widget.hintText,
-        hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-        prefixIcon: widget.prefixIcon,
-        suffixIcon: widget.isPass
+        hintText: hintText,
+        hintStyle: TextStyle(
+          color: Colors.white.withValues(alpha: 0.4),
+          fontSize: 14,
+          letterSpacing: 0.2,
+        ),
+        prefixIcon: prefixIcon,
+        suffixIcon: isPass
             ? IconButton(
                 icon: Icon(
-                  _obscureText ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.grey,
+                  obscureText.value ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.white.withValues(alpha: 0.5),
                 ),
-                onPressed: _togglePasswordVisibility,
+                onPressed: () {
+                  obscureText.value = !obscureText.value;
+                },
               )
             : null,
         filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.1),
+        fillColor: Colors.white.withValues(alpha: 0.05),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.blue, width: 1),
+          borderSide: const BorderSide(color: Color(0xFF0095F6), width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red, width: 1),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red, width: 1),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
         ),
-        errorStyle: const TextStyle(color: Colors.red, fontSize: 12),
+        errorStyle: const TextStyle(
+          color: Colors.redAccent,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
       ),
-      obscureText: _obscureText,
+      obscureText: obscureText.value,
     );
   }
 }

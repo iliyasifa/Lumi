@@ -1,24 +1,58 @@
 import 'package:flutter/foundation.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:instagram_flutter_clone/models/user.dart' as model;
 import 'package:instagram_flutter_clone/resources/auth_methods.dart';
 
-class AuthViewModel with ChangeNotifier {
+enum AuthLoadingState {
+  none,
+  emailPassword,
+  google,
+}
+
+class AuthState {
+  final model.User? user;
+  final AuthLoadingState loadingState;
+
+  const AuthState({
+    this.user,
+    this.loadingState = AuthLoadingState.none,
+  });
+
+  bool get isLoading => loadingState != AuthLoadingState.none;
+  bool get isEmailPasswordLoading =>
+      loadingState == AuthLoadingState.emailPassword;
+  bool get isGoogleLoading => loadingState == AuthLoadingState.google;
+
+  AuthState copyWith({
+    model.User? user,
+    AuthLoadingState? loadingState,
+  }) {
+    return AuthState(
+      user: user ?? this.user,
+      loadingState: loadingState ?? this.loadingState,
+    );
+  }
+}
+
+class AuthNotifier extends Notifier<AuthState> {
   final Auth _authMethods = Auth();
-  model.User? _user;
-  bool _isLoading = false;
 
-  model.User? get user => _user;
-  bool get isLoading => _isLoading;
-
-  Future<void> refreshUser() async {
-    model.User user = await _authMethods.getUserDetails();
-    _user = user;
-    notifyListeners();
+  @override
+  AuthState build() {
+    return const AuthState();
   }
 
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
+  Future<void> refreshUser() async {
+    try {
+      model.User user = await _authMethods.getUserDetails();
+      state = state.copyWith(user: user);
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
+  void _setLoading(AuthLoadingState value) {
+    state = state.copyWith(loadingState: value);
   }
 
   Future<bool> checkEmailExists(String email) async {
@@ -32,7 +66,7 @@ class AuthViewModel with ChangeNotifier {
     required String bio,
     required Uint8List file,
   }) async {
-    _setLoading(true);
+    _setLoading(AuthLoadingState.emailPassword);
     String res = await _authMethods.signUpUser(
       email: email,
       passWord: password,
@@ -40,7 +74,7 @@ class AuthViewModel with ChangeNotifier {
       bio: bio,
       file: file,
     );
-    _setLoading(false);
+    _setLoading(AuthLoadingState.none);
     return res;
   }
 
@@ -48,18 +82,31 @@ class AuthViewModel with ChangeNotifier {
     required String email,
     required String password,
   }) async {
-    _setLoading(true);
+    _setLoading(AuthLoadingState.emailPassword);
     String res = await _authMethods.loginUser(
       email: email,
       password: password,
     );
-    _setLoading(false);
+    _setLoading(AuthLoadingState.none);
+    return res;
+  }
+
+  Future<String> signInWithGoogle() async {
+    _setLoading(AuthLoadingState.google);
+    String res = await _authMethods.signInWithGoogle();
+    if (res == 'success') {
+      await refreshUser();
+    }
+    _setLoading(AuthLoadingState.none);
     return res;
   }
 
   Future<void> signOut() async {
     await _authMethods.signOut();
-    _user = null;
-    notifyListeners();
+    state = const AuthState();
   }
 }
+
+final authViewModelProvider = NotifierProvider<AuthNotifier, AuthState>(() {
+  return AuthNotifier();
+});

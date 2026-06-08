@@ -38,14 +38,17 @@ dependencies:
     sdk: flutter
   flutter_staggered_grid_view: ^0.7.0
   flutter_svg: ^2.0.9
+  google_sign_in: ^6.2.2
   image_picker: ^1.0.5
   intl: ^0.20.2
-  provider: ^6.1.1
+  hooks_riverpod: ^2.5.1
+  flutter_hooks: ^0.21.1
 
 dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -59,6 +62,13 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/ic_instagram.svg
+    - assets/app_icon.png
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/app_icon.png"
+  remove_alpha_ios: true
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
   # For details regarding adding assets from package dependencies, see
