@@ -6,7 +6,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:instagram_flutter_clone/resources/firestore_methods.dart';
 import 'package:instagram_flutter_clone/utils/utils.dart';
-import 'package:instagram_flutter_clone/view_models/auth_view_model.dart';
+import 'package:instagram_flutter_clone/view_models/auth/auth_view_model.dart';
 import 'package:instagram_flutter_clone/widgets/like_animation.dart';
 import 'package:intl/intl.dart';
 

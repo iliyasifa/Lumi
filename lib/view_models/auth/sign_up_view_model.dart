@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:instagram_flutter_clone/view_models/auth_view_model.dart';
+import 'package:instagram_flutter_clone/view_models/auth/auth_view_model.dart';
 
 class SignUpState {
   final Uint8List? image;

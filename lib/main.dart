@@ -4,19 +4,19 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:instagram_flutter_clone/firebase_options.dart';
-import 'package:instagram_flutter_clone/responsive/mobile_screen_layout.dart';
-import 'package:instagram_flutter_clone/responsive/responsive_layout_screen.dart';
-import 'package:instagram_flutter_clone/responsive/web_screen_layout.dart';
-import 'package:instagram_flutter_clone/screens/login_screen.dart';
+import 'package:instagram_flutter_clone/utils/mobile_screen_layout.dart';
+import 'package:instagram_flutter_clone/utils/responsive_layout_screen.dart';
+import 'package:instagram_flutter_clone/utils/web_screen_layout.dart';
+import 'package:instagram_flutter_clone/screens/auth/login_screen.dart';
 import 'package:instagram_flutter_clone/utils/colors.dart';
-import 'package:instagram_flutter_clone/view_models/auth_view_model.dart';
+import 'package:instagram_flutter_clone/view_models/auth/auth_view_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
+
   // Activate Firebase App Check with debug providers
   await FirebaseAppCheck.instance.activate(
     providerAndroid: AndroidDebugProvider(),

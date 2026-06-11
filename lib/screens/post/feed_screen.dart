@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:instagram_flutter_clone/resources/firestore_methods.dart';
-import 'package:instagram_flutter_clone/screens/story_view_screen.dart';
+import 'package:instagram_flutter_clone/screens/story/story_view_screen.dart';
 import 'package:instagram_flutter_clone/utils/utils.dart';
-import 'package:instagram_flutter_clone/view_models/auth_view_model.dart';
+import 'package:instagram_flutter_clone/view_models/auth/auth_view_model.dart';
 import 'package:instagram_flutter_clone/widgets/post_card.dart';
 
 class FeedScreen extends ConsumerWidget {

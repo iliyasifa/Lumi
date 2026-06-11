@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:instagram_flutter_clone/resources/firestore_methods.dart';
 import 'package:instagram_flutter_clone/utils/utils.dart';
-import 'package:instagram_flutter_clone/view_models/auth_view_model.dart';
+import 'package:instagram_flutter_clone/view_models/auth/auth_view_model.dart';
 
 class AddPostScreen extends HookConsumerWidget {
   const AddPostScreen({super.key});
@@ -220,7 +220,8 @@ class AddPostScreen extends HookConsumerWidget {
             child: Text(
               'Share',
               style: TextStyle(
-                color: isLoading.value ? Colors.blue.withValues(alpha: 0.4) : const Color(0xFF0095F6),
+                color:
+                    isLoading.value ? Colors.blue.withValues(alpha: 0.4) : const Color(0xFF0095F6),
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),

@@ -6,8 +6,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:instagram_flutter_clone/utils/utils.dart';
-import 'package:instagram_flutter_clone/view_models/auth_view_model.dart';
-import 'package:instagram_flutter_clone/view_models/sign_up_view_model.dart';
+import 'package:instagram_flutter_clone/view_models/auth/auth_view_model.dart';
+import 'package:instagram_flutter_clone/view_models/auth/sign_up_view_model.dart';
 import 'package:instagram_flutter_clone/widgets/text_field_input.dart';
 
 class SignUpScreen extends HookConsumerWidget {
