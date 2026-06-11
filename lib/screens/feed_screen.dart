@@ -1,48 +1,23 @@
-import 'package:flutter/material.dart';
+import 'dart:typed_data';
 
-class FeedScreen extends StatelessWidget {
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:instagram_flutter_clone/resources/firestore_methods.dart';
+import 'package:instagram_flutter_clone/screens/story_view_screen.dart';
+import 'package:instagram_flutter_clone/utils/utils.dart';
+import 'package:instagram_flutter_clone/view_models/auth_view_model.dart';
+import 'package:instagram_flutter_clone/widgets/post_card.dart';
+
+class FeedScreen extends ConsumerWidget {
   const FeedScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final stories = [
-      {'name': 'Your Story', 'url': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'},
-      {'name': 'alex_wander', 'url': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'},
-      {'name': 'sarah_m', 'url': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150'},
-      {'name': 'mike_travel', 'url': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'},
-      {'name': 'emma_design', 'url': 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150'},
-      {'name': 'john_fit', 'url': 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150'},
-    ];
-
-    final posts = [
-      {
-        'username': 'sarah_m',
-        'userProfile': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-        'location': 'Paris, France',
-        'likes': 1243,
-        'caption': 'Strolling around the city of lights ✨. #paris #travel',
-        'time': '2 hours ago',
-        'colors': [const Color(0xFF8A2387), const Color(0xFFE94057)],
-      },
-      {
-        'username': 'alex_wander',
-        'userProfile': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-        'location': 'Tokyo, Japan',
-        'likes': 854,
-        'caption': 'Neon nights and city lights 🏮. #tokyo #explore',
-        'time': '4 hours ago',
-        'colors': [const Color(0xFF1f4068), const Color(0xFF162447)],
-      },
-      {
-        'username': 'mike_travel',
-        'userProfile': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-        'location': 'Bali, Indonesia',
-        'likes': 2341,
-        'caption': 'Lost in paradise 🌴. #bali #vacation #vibes',
-        'time': '1 day ago',
-        'colors': [const Color(0xFF00b4db), const Color(0xFF0083b0)],
-      },
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentUser = ref.watch(authViewModelProvider).user;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -78,221 +53,305 @@ class FeedScreen extends StatelessWidget {
       body: ListView(
         physics: const BouncingScrollPhysics(),
         children: [
-          // Stories list
-          SizedBox(
-            height: 104,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              itemCount: stories.length,
-              itemBuilder: (context, index) {
-                final isFirst = index == 0;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(2.5),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: isFirst
-                              ? null
-                              : const LinearGradient(
-                                  colors: [
-                                    Color(0xFF833AB4),
-                                    Color(0xFFFD1D1D),
-                                    Color(0xFFF77737),
-                                  ],
-                                  begin: Alignment.bottomLeft,
-                                  end: Alignment.topRight,
-                                ),
-                          color: isFirst ? Colors.grey.withValues(alpha: 0.2) : null,
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.black,
-                          ),
-                          child: CircleAvatar(
-                            radius: 26,
-                            backgroundImage: NetworkImage(stories[index]['url']!),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      SizedBox(
-                        width: 68,
-                        child: Text(
-                          stories[index]['name']!,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
-                            fontSize: 11,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
+          // ─── STORIES BAR ──────────────────────────
+          _StoriesBar(currentUser: currentUser),
           const Divider(height: 1, color: Color(0xFF1E1E1E)),
 
-          // Feed posts
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: posts.length,
-            itemBuilder: (context, index) {
-              final post = posts[index];
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Post header
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 18,
-                            backgroundImage: NetworkImage(post['userProfile'] as String),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  post['username'] as String,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  post['location'] as String,
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.5),
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.more_vert, color: Colors.white, size: 20),
-                            onPressed: () {},
-                          ),
-                        ],
-                      ),
+          // ─── FEED POSTS ───────────────────────────
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('posts')
+                .orderBy('datePublished', descending: true)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.only(top: 100),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.white24,
+                      strokeWidth: 2,
                     ),
+                  ),
+                );
+              }
 
-                    // Post content image/card
-                    Container(
-                      height: 380,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: post['colors'] as List<Color>,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.photo_outlined,
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 100),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.photo_camera_outlined,
                           color: Colors.white.withValues(alpha: 0.2),
                           size: 64,
                         ),
-                      ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No posts yet',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Share your first photo to get started!',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
+                );
+              }
 
-                    // Action buttons
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                      child: Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.favorite_border, color: Colors.white),
-                            onPressed: () {},
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.chat_bubble_outline, color: Colors.white),
-                            onPressed: () {},
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.send_outlined, color: Colors.white),
-                            onPressed: () {},
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            icon: const Icon(Icons.bookmark_border, color: Colors.white),
-                            onPressed: () {},
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Likes, caption and comments
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${post['likes']} likes',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          RichText(
-                            text: TextSpan(
-                              style: const TextStyle(color: Colors.white, fontSize: 13),
-                              children: [
-                                TextSpan(
-                                  text: '${post['username']} ',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                TextSpan(text: post['caption'] as String),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'View all ${(post['likes'] as int) ~/ 5} comments',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.4),
-                              fontSize: 13,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            post['time'] as String,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.3),
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  final data = snapshot.data!.docs[index].data() as Map<String, dynamic>;
+                  return PostCard(snap: data);
+                },
               );
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── STORIES BAR ─────────────────────────────────────────
+
+class _StoriesBar extends StatelessWidget {
+  final dynamic currentUser;
+
+  const _StoriesBar({this.currentUser});
+
+  @override
+  Widget build(BuildContext context) {
+    final cutoff = DateTime.now().subtract(const Duration(hours: 24));
+
+    return SizedBox(
+      height: 104,
+      child: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('stories')
+            .where('datePublished', isGreaterThan: cutoff)
+            .orderBy('datePublished', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          // Group stories by user
+          Map<String, List<Map<String, dynamic>>> userStories = {};
+          bool currentUserHasStory = false;
+
+          if (snapshot.hasData) {
+            for (var doc in snapshot.data!.docs) {
+              final data = doc.data() as Map<String, dynamic>;
+              final uid = data['uid'] as String;
+              if (!userStories.containsKey(uid)) {
+                userStories[uid] = [];
+              }
+              userStories[uid]!.add(data);
+
+              if (uid == FirebaseAuth.instance.currentUser?.uid) {
+                currentUserHasStory = true;
+              }
+            }
+          }
+
+          // Build story items: "Your Story" first, then other users
+          List<Widget> storyWidgets = [];
+
+          // Your Story
+          storyWidgets.add(
+            _StoryAvatar(
+              name: 'Your Story',
+              imageUrl: currentUser?.photoUrl ?? 'https://i.stack.imgur.com/l60Hf.png',
+              hasStory: currentUserHasStory,
+              isYourStory: true,
+              onTap: () {
+                if (currentUserHasStory) {
+                  final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+                  final stories = userStories[currentUid] ?? [];
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => StoryViewScreen(stories: stories),
+                    ),
+                  );
+                } else {
+                  _addStory(context);
+                }
+              },
+            ),
+          );
+
+          // Other users' stories
+          final currentUid = FirebaseAuth.instance.currentUser?.uid;
+          for (var entry in userStories.entries) {
+            if (entry.key == currentUid) continue;
+            final firstStory = entry.value.first;
+            storyWidgets.add(
+              _StoryAvatar(
+                name: firstStory['username'] ?? '',
+                imageUrl: firstStory['userProfileUrl'] ?? 'https://i.stack.imgur.com/l60Hf.png',
+                hasStory: true,
+                isYourStory: false,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => StoryViewScreen(stories: entry.value),
+                    ),
+                  );
+                },
+              ),
+            );
+          }
+
+          return ListView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            children: storyWidgets,
+          );
+        },
+      ),
+    );
+  }
+
+  void _addStory(BuildContext context) async {
+    final Uint8List? file = await pickImage(ImageSource.gallery);
+    if (file == null) return;
+
+    if (currentUser == null) return;
+
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+    String res = await FirestoreMethods().uploadStory(
+      file,
+      uid,
+      currentUser!.username,
+      currentUser!.photoUrl,
+    );
+
+    if (context.mounted) {
+      if (res == 'success') {
+        showSnackBar(
+          content: 'Story uploaded!',
+          ctx: context,
+          isError: false,
+        );
+      } else {
+        showSnackBar(content: res, ctx: context);
+      }
+    }
+  }
+}
+
+class _StoryAvatar extends StatelessWidget {
+  final String name;
+  final String imageUrl;
+  final bool hasStory;
+  final bool isYourStory;
+  final VoidCallback onTap;
+
+  const _StoryAvatar({
+    required this.name,
+    required this.imageUrl,
+    required this.hasStory,
+    required this.isYourStory,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        child: Column(
+          children: [
+            Stack(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(2.5),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: hasStory
+                        ? const LinearGradient(
+                            colors: [
+                              Color(0xFF833AB4),
+                              Color(0xFFFD1D1D),
+                              Color(0xFFF77737),
+                            ],
+                            begin: Alignment.bottomLeft,
+                            end: Alignment.topRight,
+                          )
+                        : null,
+                    color: !hasStory ? Colors.grey.withValues(alpha: 0.2) : null,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black,
+                    ),
+                    child: CircleAvatar(
+                      radius: 26,
+                      backgroundImage: CachedNetworkImageProvider(imageUrl),
+                      backgroundColor: Colors.grey.shade900,
+                    ),
+                  ),
+                ),
+                if (isYourStory && !hasStory)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(1),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF0095F6),
+                        ),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            SizedBox(
+              width: 68,
+              child: Text(
+                name,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

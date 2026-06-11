@@ -1,3 +1,4 @@
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,13 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Activate Firebase App Check with debug providers
+  await FirebaseAppCheck.instance.activate(
+    providerAndroid: AndroidDebugProvider(),
+    providerApple: AppleDebugProvider(),
+  );
+
   runApp(
     const ProviderScope(
       child: MyApp(),
@@ -40,7 +48,6 @@ class MyApp extends ConsumerWidget {
             // User is logged in
             if (snapshot.hasData) {
               Future.microtask(() => ref.read(authViewModelProvider.notifier).refreshUser());
-              
               return const ReponsiveLayout(
                 mobileScreenLayout: MobileScreenLayout(),
                 webScreenLayout: WebScreenLayout(),
