@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:instagram_flutter_clone/resources/firestore_methods.dart';
-import 'package:instagram_flutter_clone/utils/utils.dart';
+import 'package:lumi/resources/firestore_methods.dart';
+import 'package:lumi/utils/utils.dart';
 
 class EditProfileScreen extends HookConsumerWidget {
   final Map<String, dynamic> userData;

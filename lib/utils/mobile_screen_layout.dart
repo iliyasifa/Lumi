@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:instagram_flutter_clone/utils/global_variables.dart';
+import 'package:lumi/utils/global_variables.dart';
 
 class MobileScreenLayout extends HookConsumerWidget {
   const MobileScreenLayout({super.key});

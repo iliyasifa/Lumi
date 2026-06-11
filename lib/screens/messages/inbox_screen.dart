@@ -2,10 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:instagram_flutter_clone/models/chat.dart';
-import 'package:instagram_flutter_clone/screens/messages/chat_screen.dart';
-import 'package:instagram_flutter_clone/view_models/auth/auth_view_model.dart';
-import 'package:instagram_flutter_clone/view_models/messages/message_view_model.dart';
+import 'package:lumi/models/chat.dart';
+import 'package:lumi/screens/messages/chat_screen.dart';
+import 'package:lumi/view_models/auth/auth_view_model.dart';
+import 'package:lumi/view_models/messages/message_view_model.dart';
 import 'package:intl/intl.dart';
 
 class InboxScreen extends HookConsumerWidget {

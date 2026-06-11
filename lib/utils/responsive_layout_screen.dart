@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:instagram_flutter_clone/utils/dimensions.dart';
+import 'package:lumi/utils/dimensions.dart';
 
 class ReponsiveLayout extends StatelessWidget {
   final Widget webScreenLayout;

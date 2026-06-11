@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:instagram_flutter_clone/models/user.dart' as model;
-import 'package:instagram_flutter_clone/resources/storage_methods.dart';
+import 'package:lumi/models/user.dart' as model;
+import 'package:lumi/resources/storage_methods.dart';
 
 class Auth {
   final FirebaseAuth _auth = FirebaseAuth.instance;

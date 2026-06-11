@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:instagram_flutter_clone/models/chat.dart';
-import 'package:instagram_flutter_clone/models/message.dart';
+import 'package:lumi/models/chat.dart';
+import 'package:lumi/models/message.dart';
 import 'package:uuid/uuid.dart';
 
 class MessageMethods {

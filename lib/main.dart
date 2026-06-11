@@ -3,13 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:instagram_flutter_clone/firebase_options.dart';
-import 'package:instagram_flutter_clone/utils/mobile_screen_layout.dart';
-import 'package:instagram_flutter_clone/utils/responsive_layout_screen.dart';
-import 'package:instagram_flutter_clone/utils/web_screen_layout.dart';
-import 'package:instagram_flutter_clone/screens/auth/login_screen.dart';
-import 'package:instagram_flutter_clone/utils/colors.dart';
-import 'package:instagram_flutter_clone/view_models/auth/auth_view_model.dart';
+import 'package:lumi/firebase_options.dart';
+import 'package:lumi/utils/mobile_screen_layout.dart';
+import 'package:lumi/utils/responsive_layout_screen.dart';
+import 'package:lumi/utils/web_screen_layout.dart';
+import 'package:lumi/screens/auth/login_screen.dart';
+import 'package:lumi/utils/colors.dart';
+import 'package:lumi/view_models/auth/auth_view_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

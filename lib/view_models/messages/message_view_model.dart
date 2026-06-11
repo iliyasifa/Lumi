@@ -1,8 +1,8 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:instagram_flutter_clone/models/chat.dart';
-import 'package:instagram_flutter_clone/models/message.dart';
-import 'package:instagram_flutter_clone/resources/message_methods.dart';
-import 'package:instagram_flutter_clone/view_models/auth/auth_view_model.dart';
+import 'package:lumi/models/chat.dart';
+import 'package:lumi/models/message.dart';
+import 'package:lumi/resources/message_methods.dart';
+import 'package:lumi/view_models/auth/auth_view_model.dart';
 
 final messageMethodsProvider = Provider((ref) => MessageMethods());
 

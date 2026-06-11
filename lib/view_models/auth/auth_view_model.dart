@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:instagram_flutter_clone/models/user.dart' as model;
-import 'package:instagram_flutter_clone/resources/auth_methods.dart';
+import 'package:lumi/models/user.dart' as model;
+import 'package:lumi/resources/auth_methods.dart';
 
 enum AuthLoadingState {
   none,

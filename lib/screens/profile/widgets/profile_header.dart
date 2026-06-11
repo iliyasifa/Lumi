@@ -1,11 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:instagram_flutter_clone/resources/firestore_methods.dart';
-import 'package:instagram_flutter_clone/screens/messages/chat_screen.dart';
-import 'package:instagram_flutter_clone/screens/profile/edit_profile_screen.dart';
-import 'package:instagram_flutter_clone/view_models/auth/auth_view_model.dart';
-import 'package:instagram_flutter_clone/view_models/profile/profile_view_model.dart';
+import 'package:lumi/resources/firestore_methods.dart';
+import 'package:lumi/screens/messages/chat_screen.dart';
+import 'package:lumi/screens/profile/edit_profile_screen.dart';
+import 'package:lumi/view_models/auth/auth_view_model.dart';
+import 'package:lumi/view_models/profile/profile_view_model.dart';
 
 class ProfileHeader extends ConsumerWidget {
   final Map<String, dynamic> userData;

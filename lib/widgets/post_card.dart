@@ -4,12 +4,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:instagram_flutter_clone/resources/firestore_methods.dart';
-import 'package:instagram_flutter_clone/resources/message_methods.dart';
-import 'package:instagram_flutter_clone/screens/post/comment_screen.dart';
-import 'package:instagram_flutter_clone/screens/profile/profile_screen.dart';
-import 'package:instagram_flutter_clone/utils/utils.dart';
-import 'package:instagram_flutter_clone/widgets/like_animation.dart';
+import 'package:lumi/resources/firestore_methods.dart';
+import 'package:lumi/resources/message_methods.dart';
+import 'package:lumi/screens/post/comment_screen.dart';
+import 'package:lumi/screens/profile/profile_screen.dart';
+import 'package:lumi/utils/utils.dart';
+import 'package:lumi/widgets/like_animation.dart';
 import 'package:intl/intl.dart';
 
 class PostCard extends HookConsumerWidget {

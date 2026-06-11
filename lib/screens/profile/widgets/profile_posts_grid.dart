@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:instagram_flutter_clone/screens/post/add_post_screen.dart';
-import 'package:instagram_flutter_clone/screens/profile/widgets/post_detail_bottom_sheet.dart';
+import 'package:lumi/screens/post/add_post_screen.dart';
+import 'package:lumi/screens/profile/widgets/post_detail_bottom_sheet.dart';
 
 class ProfilePostsGrid extends StatelessWidget {
   final String targetUid;

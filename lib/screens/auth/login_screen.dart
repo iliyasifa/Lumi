@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:instagram_flutter_clone/screens/auth/sign_up_screen.dart';
-import 'package:instagram_flutter_clone/utils/utils.dart';
-import 'package:instagram_flutter_clone/view_models/auth/auth_view_model.dart';
-import 'package:instagram_flutter_clone/widgets/text_field_input.dart';
+import 'package:lumi/screens/auth/sign_up_screen.dart';
+import 'package:lumi/utils/utils.dart';
+import 'package:lumi/view_models/auth/auth_view_model.dart';
+import 'package:lumi/widgets/text_field_input.dart';
 
 class LoginScreen extends HookConsumerWidget {
   const LoginScreen({super.key});

@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:instagram_flutter_clone/screens/profile/profile_screen.dart';
+import 'package:lumi/screens/profile/profile_screen.dart';
 
 class ExploreScreen extends HookWidget {
   const ExploreScreen({super.key});

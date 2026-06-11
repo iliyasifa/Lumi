@@ -2,10 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:instagram_flutter_clone/models/message.dart';
-import 'package:instagram_flutter_clone/screens/profile/profile_screen.dart';
-import 'package:instagram_flutter_clone/view_models/auth/auth_view_model.dart';
-import 'package:instagram_flutter_clone/view_models/messages/message_view_model.dart';
+import 'package:lumi/models/message.dart';
+import 'package:lumi/screens/profile/profile_screen.dart';
+import 'package:lumi/view_models/auth/auth_view_model.dart';
+import 'package:lumi/view_models/messages/message_view_model.dart';
 
 class ChatScreen extends HookConsumerWidget {
   final String targetUid;
