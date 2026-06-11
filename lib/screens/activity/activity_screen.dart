@@ -1,16 +1,23 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:lumi/screens/profile/profile_screen.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:lumi/models/notification.dart';
+import 'package:lumi/resources/firestore_methods.dart';
+import 'package:lumi/screens/post/post_detail_screen.dart';
+import 'package:lumi/screens/profile/profile_screen.dart';
+import 'package:lumi/view_models/auth/auth_view_model.dart';
+import 'package:lumi/view_models/notifications/notifications_view_model.dart';
 
-class ActivityScreen extends StatelessWidget {
+class ActivityScreen extends ConsumerWidget {
   const ActivityScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authViewModelProvider);
+    final currentUid = authState.user?.uid ?? '';
+    final notificationsAsync = ref.watch(notificationsStreamProvider);
+    final unreadCount = ref.watch(unreadNotificationsCountProvider);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -26,24 +33,28 @@ class ActivityScreen extends StatelessWidget {
           ),
         ),
         centerTitle: false,
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('posts')
-            .where('uid', isEqualTo: currentUid)
-            .orderBy('datePublished', descending: true)
-            .snapshots(),
-        builder: (context, postSnapshot) {
-          if (postSnapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.white24,
-                strokeWidth: 2,
+        actions: [
+          if (unreadCount > 0)
+            TextButton(
+              onPressed: () async {
+                if (currentUid.isNotEmpty) {
+                  await FirestoreMethods().markAllNotificationsAsRead(currentUid);
+                }
+              },
+              child: const Text(
+                'Mark all as read',
+                style: TextStyle(
+                  color: Color(0xFF0095F6),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
-            );
-          }
-
-          if (!postSnapshot.hasData || postSnapshot.data!.docs.isEmpty) {
+            ),
+        ],
+      ),
+      body: notificationsAsync.when(
+        data: (notifications) {
+          if (notifications.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -65,7 +76,7 @@ class ActivityScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Activity on your posts',
+                    'No activity yet',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 16,
@@ -74,7 +85,7 @@ class ActivityScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'When someone likes or comments on\nyour posts, it will show up here.',
+                    'When someone likes, comments, or follows you,\nit will show up here.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.4),
@@ -87,165 +98,237 @@ class ActivityScreen extends StatelessWidget {
             );
           }
 
-          // Build activity items from posts with likes
-          List<Map<String, dynamic>> activityItems = [];
-
-          for (var doc in postSnapshot.data!.docs) {
-            final data = doc.data() as Map<String, dynamic>;
-            final likes = data['likes'] as List? ?? [];
-
-            // Add activity for each like (except self-likes)
-            for (var likerUid in likes) {
-              if (likerUid != currentUid) {
-                activityItems.add({
-                  'type': 'like',
-                  'uid': likerUid,
-                  'postUrl': data['postUrl'],
-                  'postId': data['postId'],
-                  'datePublished': data['datePublished'],
-                });
-              }
-            }
-          }
-
-          if (activityItems.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.favorite_border,
-                    color: Colors.white.withValues(alpha: 0.2),
-                    size: 48,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'No activity yet',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
           return ListView.builder(
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: activityItems.length,
+            itemCount: notifications.length,
             itemBuilder: (context, index) {
-              return _ActivityTile(item: activityItems[index]);
+              final notification = notifications[index];
+              return _ActivityTile(
+                notification: notification,
+                currentUid: currentUid,
+              );
             },
           );
         },
+        loading: () => const Center(
+          child: CircularProgressIndicator(
+            color: Colors.white24,
+            strokeWidth: 2,
+          ),
+        ),
+        error: (error, _) => Center(
+          child: Text(
+            'Error loading activity: $error',
+            style: const TextStyle(color: Colors.white54),
+          ),
+        ),
       ),
     );
   }
 }
 
-class _ActivityTile extends StatelessWidget {
-  final Map<String, dynamic> item;
+class _ActivityTile extends ConsumerWidget {
+  final NotificationModel notification;
+  final String currentUid;
 
-  const _ActivityTile({required this.item});
+  const _ActivityTile({
+    required this.notification,
+    required this.currentUid,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance.collection('users').doc(item['uid']).get(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || !snapshot.data!.exists) {
-          return const SizedBox.shrink();
-        }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentUser = ref.watch(authViewModelProvider).user;
+    final isFollowing = currentUser?.following.contains(notification.senderId) ?? false;
 
-        final userData = snapshot.data!.data() as Map<String, dynamic>;
+    void handleNotificationTap() {
+      // Mark notification as read
+      if (currentUid.isNotEmpty && !notification.isRead) {
+        FirestoreMethods().markNotificationAsRead(currentUid, notification.notificationId);
+      }
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ProfileScreen(uid: item['uid']),
-              ),
-            ),
-            child: Row(
+      // Route
+      if (notification.type == 'follow') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ProfileScreen(uid: notification.senderId),
+          ),
+        );
+      } else if ((notification.type == 'like' || notification.type == 'comment') &&
+          notification.postId != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PostDetailScreen(postId: notification.postId!),
+          ),
+        );
+      }
+    }
+
+    return InkWell(
+      onTap: handleNotificationTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: [
+            // User profile picture with unread dot indicator
+            Stack(
+              alignment: Alignment.center,
               children: [
                 CircleAvatar(
                   radius: 20,
                   backgroundImage: CachedNetworkImageProvider(
-                    userData['photoUrl'] ?? 'https://i.stack.imgur.com/l60Hf.png',
+                    (notification.senderProfileUrl.isNotEmpty)
+                        ? notification.senderProfileUrl
+                        : 'https://i.stack.imgur.com/l60Hf.png',
                   ),
                   backgroundColor: Colors.grey.shade900,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: RichText(
-                    text: TextSpan(
-                      style: const TextStyle(fontSize: 13),
-                      children: [
-                        TextSpan(
-                          text: userData['username'] ?? 'User',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        TextSpan(
-                          text: item['type'] == 'like'
-                              ? ' liked your post. '
-                              : ' commented on your post. ',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.7),
-                          ),
-                        ),
-                        TextSpan(
-                          text: _formatDate(item['datePublished']),
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.35),
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                if (item['postUrl'] != null)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: CachedNetworkImage(
-                      imageUrl: item['postUrl'],
-                      width: 44,
-                      height: 44,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        width: 44,
-                        height: 44,
-                        color: Colors.grey.shade900,
+                if (!notification.isRead)
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0095F6),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.black, width: 1.5),
                       ),
                     ),
                   ),
               ],
             ),
-          ),
-        );
-      },
+            const SizedBox(width: 12),
+
+            // Notification text content
+            Expanded(
+              child: RichText(
+                text: TextSpan(
+                  style: const TextStyle(fontSize: 13, height: 1.3),
+                  children: [
+                    TextSpan(
+                      text: notification.senderUsername,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    TextSpan(
+                      text: _getNotificationText(notification),
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                    ),
+                    TextSpan(
+                      text: ' ${_formatDate(notification.timestamp)}',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // Trailing action: Post thumbnail OR Follow button
+            if (notification.type == 'follow')
+              SizedBox(
+                height: 28,
+                child: isFollowing
+                    ? OutlinedButton(
+                        onPressed: () async {
+                          if (currentUid.isNotEmpty) {
+                            await FirestoreMethods().followUser(currentUid, notification.senderId);
+                            ref.read(authViewModelProvider.notifier).refreshUser();
+                          }
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                        ),
+                        child: const Text(
+                          'Following',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
+                    : ElevatedButton(
+                        onPressed: () async {
+                          if (currentUid.isNotEmpty) {
+                            await FirestoreMethods().followUser(currentUid, notification.senderId);
+                            ref.read(authViewModelProvider.notifier).refreshUser();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0095F6),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                        ),
+                        child: const Text(
+                          'Follow Back',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+              )
+            else if ((notification.type == 'like' || notification.type == 'comment') &&
+                notification.postUrl != null &&
+                notification.postUrl!.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: CachedNetworkImage(
+                  imageUrl: notification.postUrl!,
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) => Container(
+                    width: 40,
+                    height: 40,
+                    color: Colors.grey.shade900,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
-  String _formatDate(dynamic date) {
-    if (date == null) return '';
-    DateTime dateTime;
-    if (date is Timestamp) {
-      dateTime = date.toDate();
-    } else if (date is DateTime) {
-      dateTime = date;
-    } else {
-      return '';
+  String _getNotificationText(NotificationModel notification) {
+    switch (notification.type) {
+      case 'like':
+        return ' liked your post.';
+      case 'comment':
+        final commentSnippet = (notification.commentText != null && notification.commentText!.length > 30)
+            ? '${notification.commentText!.substring(0, 30)}...'
+            : notification.commentText;
+        return ' commented: "${commentSnippet ?? ''}"';
+      case 'follow':
+        return ' started following you.';
+      default:
+        return ' interacted with your profile.';
     }
+  }
 
+  String _formatDate(DateTime dateTime) {
     final diff = DateTime.now().difference(dateTime);
     if (diff.inMinutes < 1) return 'now';
     if (diff.inMinutes < 60) return '${diff.inMinutes}m';

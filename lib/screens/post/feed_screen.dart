@@ -12,6 +12,7 @@ import 'package:lumi/screens/messages/inbox_screen.dart';
 import 'package:lumi/screens/story/story_view_screen.dart';
 import 'package:lumi/utils/utils.dart';
 import 'package:lumi/view_models/auth/auth_view_model.dart';
+import 'package:lumi/view_models/notifications/notifications_view_model.dart';
 import 'package:lumi/widgets/post_card.dart';
 
 class FeedScreen extends ConsumerWidget {
@@ -20,6 +21,7 @@ class FeedScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUser = ref.watch(authViewModelProvider).user;
+    final unreadCount = ref.watch(unreadNotificationsCountProvider);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -43,7 +45,12 @@ class FeedScreen extends ConsumerWidget {
         centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.favorite_border, color: Colors.white),
+            icon: Badge(
+              isLabelVisible: unreadCount > 0,
+              label: Text(unreadCount.toString()),
+              backgroundColor: const Color(0xFFE50914),
+              child: const Icon(Icons.favorite_border, color: Colors.white),
+            ),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const ActivityScreen()),

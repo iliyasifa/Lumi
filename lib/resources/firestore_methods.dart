@@ -1,6 +1,6 @@
-import 'dart:typed_data';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import 'package:lumi/models/notification.dart';
 import 'package:lumi/resources/storage_methods.dart';
 import 'package:uuid/uuid.dart';
 
@@ -55,10 +55,37 @@ class FirestoreMethods {
         await _firestore.collection('posts').doc(postId).update({
           'likes': FieldValue.arrayRemove([uid]),
         });
+
+        // Remove like notification
+        DocumentSnapshot postSnap = await _firestore.collection('posts').doc(postId).get();
+        if (postSnap.exists) {
+          String postOwnerUid = (postSnap.data() as Map<String, dynamic>)['uid'];
+          await deleteNotification(
+            receiverId: postOwnerUid,
+            senderId: uid,
+            type: 'like',
+            postId: postId,
+          );
+        }
       } else {
         await _firestore.collection('posts').doc(postId).update({
           'likes': FieldValue.arrayUnion([uid]),
         });
+
+        // Add like notification
+        DocumentSnapshot postSnap = await _firestore.collection('posts').doc(postId).get();
+        if (postSnap.exists) {
+          final postData = postSnap.data() as Map<String, dynamic>;
+          String postOwnerUid = postData['uid'];
+          String postUrl = postData['postUrl'] ?? '';
+          await addNotification(
+            receiverId: postOwnerUid,
+            senderId: uid,
+            type: 'like',
+            postId: postId,
+            postUrl: postUrl,
+          );
+        }
       }
     } catch (e) {
       rethrow;
@@ -98,6 +125,22 @@ class FirestoreMethods {
           'datePublished': DateTime.now(),
           'likes': [],
         });
+
+        // Add comment notification
+        DocumentSnapshot postSnap = await _firestore.collection('posts').doc(postId).get();
+        if (postSnap.exists) {
+          final postData = postSnap.data() as Map<String, dynamic>;
+          String postOwnerUid = postData['uid'];
+          String postUrl = postData['postUrl'] ?? '';
+          await addNotification(
+            receiverId: postOwnerUid,
+            senderId: uid,
+            type: 'comment',
+            postId: postId,
+            postUrl: postUrl,
+            commentText: text,
+          );
+        }
 
         res = 'success';
       } else {
@@ -157,6 +200,13 @@ class FirestoreMethods {
         await _firestore.collection('users').doc(uid).update({
           'following': FieldValue.arrayRemove([followId]),
         });
+
+        // Remove follow notification
+        await deleteNotification(
+          receiverId: followId,
+          senderId: uid,
+          type: 'follow',
+        );
       } else {
         // Follow
         await _firestore.collection('users').doc(followId).update({
@@ -165,6 +215,13 @@ class FirestoreMethods {
         await _firestore.collection('users').doc(uid).update({
           'following': FieldValue.arrayUnion([followId]),
         });
+
+        // Add follow notification
+        await addNotification(
+          receiverId: followId,
+          senderId: uid,
+          type: 'follow',
+        );
       }
     } catch (e) {
       rethrow;
@@ -288,14 +345,129 @@ class FirestoreMethods {
     return res;
   }
 
-  // ─── ACTIVITY ────────────────────────────────────────────
+  // ─── ACTIVITY / NOTIFICATIONS ───────────────────────────
 
-  /// Get activity (likes + comments on current user's posts)
+  /// Get activity stream (notifications list)
   Stream<QuerySnapshot> getActivityStream(String uid) {
     return _firestore
-        .collection('posts')
-        .where('uid', isEqualTo: uid)
-        .orderBy('datePublished', descending: true)
+        .collection('users')
+        .doc(uid)
+        .collection('notifications')
+        .orderBy('timestamp', descending: true)
         .snapshots();
+  }
+
+  /// Add a notification
+  Future<void> addNotification({
+    required String receiverId,
+    required String senderId,
+    required String type,
+    String? postId,
+    String? postUrl,
+    String? commentText,
+  }) async {
+    try {
+      // Don't notify if action is on own content
+      if (receiverId == senderId) return;
+
+      // Get sender user info
+      DocumentSnapshot senderSnap =
+          await _firestore.collection('users').doc(senderId).get();
+      if (!senderSnap.exists) return;
+      final senderData = senderSnap.data() as Map<String, dynamic>;
+
+      String notificationId = const Uuid().v1();
+      NotificationModel notification = NotificationModel(
+        notificationId: notificationId,
+        senderId: senderId,
+        senderUsername: senderData['username'] ?? '',
+        senderProfileUrl: senderData['photoUrl'] ?? '',
+        type: type,
+        postId: postId,
+        postUrl: postUrl,
+        commentText: commentText,
+        timestamp: DateTime.now(),
+        isRead: false,
+      );
+
+      await _firestore
+          .collection('users')
+          .doc(receiverId)
+          .collection('notifications')
+          .doc(notificationId)
+          .set(notification.toJson());
+    } catch (e) {
+      debugPrint('Error adding notification: $e');
+    }
+  }
+
+  /// Remove a notification (like unlike, unfollow)
+  Future<void> deleteNotification({
+    required String receiverId,
+    required String senderId,
+    required String type,
+    String? postId,
+  }) async {
+    try {
+      QuerySnapshot query;
+      if (postId != null) {
+        query = await _firestore
+            .collection('users')
+            .doc(receiverId)
+            .collection('notifications')
+            .where('senderId', isEqualTo: senderId)
+            .where('type', isEqualTo: type)
+            .where('postId', isEqualTo: postId)
+            .get();
+      } else {
+        query = await _firestore
+            .collection('users')
+            .doc(receiverId)
+            .collection('notifications')
+            .where('senderId', isEqualTo: senderId)
+            .where('type', isEqualTo: type)
+            .get();
+      }
+
+      for (var doc in query.docs) {
+        await doc.reference.delete();
+      }
+    } catch (e) {
+      debugPrint('Error deleting notification: $e');
+    }
+  }
+
+  /// Mark notification as read
+  Future<void> markNotificationAsRead(String userId, String notificationId) async {
+    try {
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('notifications')
+          .doc(notificationId)
+          .update({'isRead': true});
+    } catch (e) {
+      debugPrint('Error marking notification as read: $e');
+    }
+  }
+
+  /// Mark all notifications as read
+  Future<void> markAllNotificationsAsRead(String userId) async {
+    try {
+      final query = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('notifications')
+          .where('isRead', isEqualTo: false)
+          .get();
+
+      final batch = _firestore.batch();
+      for (var doc in query.docs) {
+        batch.update(doc.reference, {'isRead': true});
+      }
+      await batch.commit();
+    } catch (e) {
+      debugPrint('Error marking all notifications as read: $e');
+    }
   }
 }

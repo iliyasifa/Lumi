@@ -1,4 +1,3 @@
-import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +8,7 @@ import 'package:lumi/utils/responsive_layout_screen.dart';
 import 'package:lumi/utils/web_screen_layout.dart';
 import 'package:lumi/screens/auth/login_screen.dart';
 import 'package:lumi/utils/colors.dart';
+import 'package:lumi/resources/notification_service.dart';
 import 'package:lumi/view_models/auth/auth_view_model.dart';
 
 void main() async {
@@ -17,11 +17,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Activate Firebase App Check with debug providers
-  await FirebaseAppCheck.instance.activate(
-    providerAndroid: AndroidDebugProvider(),
-    providerApple: AppleDebugProvider(),
-  );
+  // Initialize notifications
+  await NotificationService().initialize();
 
   runApp(
     const ProviderScope(
@@ -47,12 +44,19 @@ class MyApp extends ConsumerWidget {
           if (snapshot.connectionState == ConnectionState.active) {
             // User is logged in
             if (snapshot.hasData) {
-              Future.microtask(() => ref.read(authViewModelProvider.notifier).refreshUser());
+              final uid = snapshot.data!.uid;
+              Future.microtask(() {
+                ref.read(authViewModelProvider.notifier).refreshUser();
+                NotificationService().onUserLogin(uid);
+              });
               return const ReponsiveLayout(
                 mobileScreenLayout: MobileScreenLayout(),
                 webScreenLayout: WebScreenLayout(),
               );
-            } else if (snapshot.hasError) {
+            } else {
+              NotificationService().onUserLogout();
+            }
+            if (snapshot.hasError) {
               return Center(
                 child: Text('${snapshot.error}'),
               );

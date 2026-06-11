@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:lumi/utils/global_variables.dart';
+import 'package:lumi/view_models/notifications/notifications_view_model.dart';
 
 class MobileScreenLayout extends HookConsumerWidget {
   const MobileScreenLayout({super.key});
@@ -10,6 +11,7 @@ class MobileScreenLayout extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pageController = usePageController();
     final page = useState(0);
+    final unreadCount = ref.watch(unreadNotificationsCountProvider);
 
     void navigationTapped(int tappedPage) {
       pageController.jumpToPage(tappedPage);
@@ -72,10 +74,15 @@ class MobileScreenLayout extends HookConsumerWidget {
               label: '',
             ),
             BottomNavigationBarItem(
-              icon: Icon(
-                page.value == 3 ? Icons.favorite : Icons.favorite_border,
-                color: page.value == 3 ? Colors.white : Colors.white.withValues(alpha: 0.4),
-                size: 26,
+              icon: Badge(
+                isLabelVisible: unreadCount > 0,
+                label: Text(unreadCount.toString()),
+                backgroundColor: const Color(0xFFE50914),
+                child: Icon(
+                  page.value == 3 ? Icons.favorite : Icons.favorite_border,
+                  color: page.value == 3 ? Colors.white : Colors.white.withValues(alpha: 0.4),
+                  size: 26,
+                ),
               ),
               label: '',
             ),
