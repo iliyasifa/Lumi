@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:instagram_flutter_clone/resources/firestore_methods.dart';
+import 'package:instagram_flutter_clone/resources/message_methods.dart';
 import 'package:instagram_flutter_clone/screens/post/comment_screen.dart';
 import 'package:instagram_flutter_clone/screens/profile/profile_screen.dart';
 import 'package:instagram_flutter_clone/utils/utils.dart';
@@ -38,6 +39,7 @@ class PostCard extends HookConsumerWidget {
           commentLen.value = commentsSnap.docs.length;
         } catch (_) {}
       }
+
       fetchCommentCount();
       return null;
     }, [snap['postId']]);
@@ -62,7 +64,10 @@ class PostCard extends HookConsumerWidget {
                   child: CircleAvatar(
                     radius: 18,
                     backgroundImage: CachedNetworkImageProvider(
-                      snap['userProfileUrl'] ?? 'https://i.stack.imgur.com/l60Hf.png',
+                      (snap['userProfileUrl'] != null &&
+                              snap['userProfileUrl'].toString().isNotEmpty)
+                          ? snap['userProfileUrl']
+                          : 'https://i.stack.imgur.com/l60Hf.png',
                     ),
                     backgroundColor: Colors.grey.shade900,
                   ),
@@ -127,7 +132,9 @@ class PostCard extends HookConsumerWidget {
                   height: MediaQuery.of(context).size.width,
                   width: double.infinity,
                   child: CachedNetworkImage(
-                    imageUrl: snap['postUrl'] ?? '',
+                    imageUrl: (snap['postUrl'] != null && snap['postUrl'].toString().isNotEmpty)
+                        ? snap['postUrl']
+                        : 'https://i.stack.imgur.com/l60Hf.png',
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(
                       color: Colors.grey.shade900,
@@ -197,7 +204,7 @@ class PostCard extends HookConsumerWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.send_outlined, color: Colors.white),
-                  onPressed: () {},
+                  onPressed: () => _showSendDialog(context, snap, currentUser.uid),
                 ),
                 const Spacer(),
                 IconButton(
@@ -344,9 +351,140 @@ class PostCard extends HookConsumerWidget {
                 title: const Text('Share', style: TextStyle(color: Colors.white)),
                 onTap: () => Navigator.pop(context),
               ),
-              const SizedBox(height: 8),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  void _showSendDialog(BuildContext context, Map<String, dynamic> snap, String currentUid) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF262626),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 8, bottom: 8),
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade600,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    'Send to',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: TextField(
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Search',
+                      hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                      prefixIcon: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.5)),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.1),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: FutureBuilder(
+                    future: FirebaseFirestore.instance.collection('users').get(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        );
+                      }
+
+                      final docs = (snapshot.data! as QuerySnapshot).docs;
+                      final users = docs.where((doc) => doc.id != currentUid).toList();
+
+                      return ListView.builder(
+                        controller: scrollController,
+                        itemCount: users.length,
+                        itemBuilder: (context, index) {
+                          final user = users[index].data() as Map<String, dynamic>;
+                          final targetUid = users[index].id;
+
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: CachedNetworkImageProvider(
+                                (user['photoUrl'] != null && user['photoUrl'].toString().isNotEmpty)
+                                    ? user['photoUrl']
+                                    : 'https://i.stack.imgur.com/l60Hf.png',
+                              ),
+                              backgroundColor: Colors.grey.shade900,
+                            ),
+                            title: Text(
+                              user['username'],
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              user['username'],
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                            ),
+                            trailing: ElevatedButton(
+                              onPressed: () async {
+                                await MessageMethods().sendMessage(
+                                  currentUid: currentUid,
+                                  targetUid: targetUid,
+                                  text: '',
+                                  type: 'post',
+                                  postData: snap,
+                                );
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  showSnackBar(
+                                    content: 'Sent',
+                                    ctx: context,
+                                    isError: false,
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF0095F6),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text('Send'),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );

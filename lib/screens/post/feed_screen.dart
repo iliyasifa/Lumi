@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:instagram_flutter_clone/resources/firestore_methods.dart';
+import 'package:instagram_flutter_clone/screens/activity/activity_screen.dart';
+import 'package:instagram_flutter_clone/screens/messages/inbox_screen.dart';
 import 'package:instagram_flutter_clone/screens/story/story_view_screen.dart';
 import 'package:instagram_flutter_clone/utils/utils.dart';
 import 'package:instagram_flutter_clone/view_models/auth/auth_view_model.dart';
@@ -42,11 +44,17 @@ class FeedScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.favorite_border, color: Colors.white),
-            onPressed: () {},
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ActivityScreen()),
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline, color: Colors.white),
-            onPressed: () {},
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const InboxScreen()),
+            ),
           ),
         ],
       ),

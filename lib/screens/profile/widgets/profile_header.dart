@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:instagram_flutter_clone/resources/firestore_methods.dart';
+import 'package:instagram_flutter_clone/screens/messages/chat_screen.dart';
 import 'package:instagram_flutter_clone/screens/profile/edit_profile_screen.dart';
 import 'package:instagram_flutter_clone/view_models/auth/auth_view_model.dart';
 import 'package:instagram_flutter_clone/view_models/profile/profile_view_model.dart';
@@ -139,9 +140,7 @@ class ProfileHeader extends ConsumerWidget {
                       ),
                     ).then((_) {
                       // Refresh profile after edit
-                      ref
-                          .read(profileViewModelProvider(targetUid).notifier)
-                          .fetchProfileData();
+                      ref.read(profileViewModelProvider(targetUid).notifier).fetchProfileData();
                       ref.read(authViewModelProvider.notifier).refreshUser();
                     });
                   },
@@ -172,9 +171,7 @@ class ProfileHeader extends ConsumerWidget {
                     ? OutlinedButton(
                         onPressed: () async {
                           await FirestoreMethods().followUser(currentUid, targetUid);
-                          ref
-                              .read(profileViewModelProvider(targetUid).notifier)
-                              .fetchProfileData();
+                          ref.read(profileViewModelProvider(targetUid).notifier).fetchProfileData();
                         },
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
@@ -195,9 +192,7 @@ class ProfileHeader extends ConsumerWidget {
                     : ElevatedButton(
                         onPressed: () async {
                           await FirestoreMethods().followUser(currentUid, targetUid);
-                          ref
-                              .read(profileViewModelProvider(targetUid).notifier)
-                              .fetchProfileData();
+                          ref.read(profileViewModelProvider(targetUid).notifier).fetchProfileData();
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF0095F6),
@@ -220,7 +215,17 @@ class ProfileHeader extends ConsumerWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ChatScreen(
+                          targetUid: targetUid,
+                          targetUserData: userData,
+                        ),
+                      ),
+                    );
+                  },
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
                     shape: RoundedRectangleBorder(

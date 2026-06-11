@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:instagram_flutter_clone/screens/post/add_post_screen.dart';
 import 'package:instagram_flutter_clone/screens/profile/widgets/post_detail_bottom_sheet.dart';
 
 class ProfilePostsGrid extends StatelessWidget {
@@ -77,7 +78,12 @@ class ProfilePostsGrid extends StatelessWidget {
                 if (isOwnProfile) ...[
                   const SizedBox(height: 16),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AddPostScreen(),
+                      ),
+                    ),
                     child: const Text(
                       'Share your first photo',
                       style: TextStyle(

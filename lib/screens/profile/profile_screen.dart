@@ -60,7 +60,7 @@ class ProfileScreen extends HookConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert, color: Colors.white),
-            onPressed: () {},
+            onPressed: () => _showProfileOptions(context, isOwnProfile, ref, targetUid),
           ),
         ],
       ),
@@ -125,4 +125,66 @@ class ProfileScreen extends HookConsumerWidget {
       ),
     );
   }
+}
+
+void _showProfileOptions(
+  BuildContext context,
+  bool isOwnProfile,
+  WidgetRef ref,
+  String targetUid,
+) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: const Color(0xFF262626),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (context) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 8, bottom: 4),
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade600,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            if (isOwnProfile) ...[
+              ListTile(
+                leading: const Icon(Icons.qr_code, color: Colors.white),
+                title: const Text('QR Code', style: TextStyle(color: Colors.white)),
+                onTap: () => Navigator.pop(context),
+              ),
+              ListTile(
+                leading: const Icon(Icons.settings_outlined, color: Colors.white),
+                title: const Text('Settings', style: TextStyle(color: Colors.white)),
+                onTap: () => Navigator.pop(context),
+              ),
+            ] else ...[
+              ListTile(
+                leading: const Icon(Icons.link, color: Colors.white),
+                title: const Text('Copy Profile Link', style: TextStyle(color: Colors.white)),
+                onTap: () => Navigator.pop(context),
+              ),
+              ListTile(
+                leading: const Icon(Icons.report_outlined, color: Colors.red),
+                title: const Text('Report', style: TextStyle(color: Colors.red)),
+                onTap: () => Navigator.pop(context),
+              ),
+              ListTile(
+                leading: const Icon(Icons.block, color: Colors.red),
+                title: const Text('Block', style: TextStyle(color: Colors.red)),
+                onTap: () => Navigator.pop(context),
+              ),
+            ],
+            const SizedBox(height: 8),
+          ],
+        ),
+      );
+    },
+  );
 }
